@@ -23,6 +23,7 @@ fi
 
 case $1 in
   init)
+  ## should refactor with fade-linux.github.io link
 	test -n "$FADE_PROJECT_NAME" || echo -n "Enter your project's name(in lower case alphabet, number, dash): "
 	test -n "$FADE_PROJECT_NAME" || read FADE_PROJECT_NAME
 	test -n "$FADE_PROJECT_DESC" || echo "What a awesome project!"

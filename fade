@@ -23,6 +23,7 @@ fi
 
 case $1 in
   init)
+  ## should refactor with fade-linux.github.io link
 	test -n "$FADE_PROJECT_NAME" || echo -n "Enter your project's name(in lower case alphabet, number, dash): "
 	test -n "$FADE_PROJECT_NAME" || read FADE_PROJECT_NAME
 	test -n "$FADE_PROJECT_DESC" || echo "What a awesome project!"
@@ -30,7 +31,6 @@ case $1 in
 	test -n "$FADE_PROJECT_DESC" || read FADE_PROJECT_DESC
 	test -n "$FADE_PROJECT_RUN" || echo -ne "How to run your project?\n $ "
 	test -n "$FADE_PROJECT_RUN" || read FADE_PROJECT_RUN
-	test -n "$FADE_PROJECT_DESC" || read FADE_PROJECT_DESC
 	test -n "$FADE_PROJECT_VERSION" || echo -n "Enter your project's version: "
 	test -n "$FADE_PROJECT_VERSION" || read FADE_PROJECT_VERSION
 	test -n "$FADE_PROJECT_DEPENDS" || echo -n "(DEB) Enter your project's dependancy (default: systemd): "
@@ -175,9 +175,9 @@ EOF
 	test -f project-dist.tar.gz && rm project-dist.tar.gz
 	cd fadework
 	test -f internal-sh/data.tar.gz && rm internal-sh/data.tar.gz
-	tar --owner=0 --group=0 -czf internal-sh/data.tar.gz usr
+	tar -czf internal-sh/data.tar.gz usr
 	cd internal-sh
-	tar --owner=0 --group=0 -czf ../../project-dist.tar.gz .
+	tar -czf ../../project-dist.tar.gz .
 	rm data.tar.gz
 	cd ../..
 	echo "Done. Please check project-dist.tar.gz!"
@@ -190,9 +190,9 @@ EOF
 	echo '2.0'>debian-binary
 	test -f control.tar.gz && rm control.tar.gz
         test -f data.tar.gz && rm data.tar.gz
-	tar --owner=0 --group=0 -czf data.tar.gz usr
+	tar -czf data.tar.gz usr
 	cd internal
-	tar --owner=0 --group=0 -czf ../control.tar.gz *
+	tar -czf ../control.tar.gz *
 	cd ..
 	ar r ../project-dist.deb debian-binary control.tar.gz data.tar.gz
 	rm debian-binary control.tar.gz data.tar.gz

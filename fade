@@ -23,10 +23,10 @@ fi
 
 case $1 in
   init)
-	test -n "$FADE_PROJECT_NAME" || echo -n "Enter your project's name(in alphabet, number, dash): "
+	test -n "$FADE_PROJECT_NAME" || echo -n "Enter your project's name(in lower case alphabet, number, dash): "
 	test -n "$FADE_PROJECT_NAME" || read FADE_PROJECT_NAME
 	test -n "$FADE_PROJECT_DESC" || echo "What a awesome project!"
-	test -n "$FADE_PROJECT_DESC" || echo -n "Enter your project's Description: "
+	test -n "$FADE_PROJECT_DESC" || echo -n "Enter your project's Description or full name(in one line): "
 	test -n "$FADE_PROJECT_DESC" || read FADE_PROJECT_DESC
 	test -n "$FADE_PROJECT_RUN" || echo -ne "How to run your project?\n $ "
 	test -n "$FADE_PROJECT_RUN" || read FADE_PROJECT_RUN
@@ -40,8 +40,8 @@ case $1 in
 	test -n "$FADE_MAINTAINER_MAIL" || echo -n "Enter Maintainer's E-mail: "
 	test -n "$FADE_MAINTAINER_MAIL" || read FADE_MAINTAINER_MAIL
 	test -n "$FADE_PROJECT_WWW" || echo -n "Enter Project's Website (if any):"
+	test -n "$FADE_PROJECT_WWW" || read FADE_PROJECT_WWW
 	test -n "$FADE_PROJECT_WWW" || FADE_PROJECT_WWW="http://example.com"
-	test "$FADE_PROJECT_WWW" == "http://example.com" && read FADE_PROJECT_WWW
 	test -n "$FADE_PROJECT_BOOT" || echo -n "Do you wanna make your service run on boot? (1/0): "
 	test -n "$FADE_PROJECT_BOOT" || read FADE_PROJECT_BOOT
 	mkdir -p fadework/usr/lib/$FADE_PROJECT_NAME
@@ -52,7 +52,7 @@ if [ \$EUID -ne 0 ]; then
         echo "(FADe) To run this script securely, we need sudo privilege.";
 fi
 cd /usr/lib/$FADE_PROJECT_NAME
-exec sudo -H $FADE_PROJECT_NAME $FADE_PROJECT_RUN \$@
+exec sudo -H -u $FADE_PROJECT_NAME $FADE_PROJECT_RUN \$@
 EOF
 	mkdir fadework/internal fadework/internal-sh
 	cat >> fadework/internal/control << EOF
@@ -82,7 +82,7 @@ echo "Powered by Fully Automated Distribution enhanced (FADe)"
 if [ "$FADE_PROJECT_BOOT" -ne "0" ]; then
 cat >> /etc/systemd/system/$FADE_PROJECT_NAME.service << EOF
 [Unit]
-Description=$FADE_PROJECT_NAME
+Description=$FADE_PROJECT_DESC
 
 [Service]
 Type=simple
@@ -140,7 +140,7 @@ echo "Powered by Fully Automated Distribution enhanced (FADe)"
 if [ "$FADE_PROJECT_BOOT" -ne "0" ]; then
 cat >> /etc/systemd/system/$FADE_PROJECT_NAME.service << EOF
 [Unit]
-Description=$FADE_PROJECT_NAME
+Description=$FADE_PROJECT_DESC
 
 [Service]
 Type=simple

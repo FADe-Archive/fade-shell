@@ -30,8 +30,12 @@ jobs:
         rm fadework/usr/bin/fade
         cp ./fade fadework/usr/bin/fade
         ./fade builddeb
+        pwd
+        ls -al
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
       with:
         # Artifact name
-        name: project-dist.deb
+        name: ./project-dist.deb
+        # Destination path
+        path: .

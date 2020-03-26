@@ -54,7 +54,7 @@ fi
 cd /usr/lib/$FADE_PROJECT_NAME
 exec sudo -H -u $FADE_PROJECT_NAME $FADE_PROJECT_RUN \$@
 EOF
-	mkdir fadework/internal fadework/internal-sh
+	mkdir fadework/internal
 	cat >> fadework/internal/control << EOF
 Package: $FADE_PROJECT_NAME
 Version: $FADE_PROJECT_VERSION
@@ -116,72 +116,15 @@ rm /usr/bin/$FADE_PROJECT_NAME
 fi
 userdel $FADE_PROJECT_NAME
 EOFA
-	cat >> fadework/internal-sh/install << EOFA
-#!/bin/bash
-if [ \$EUID -ne 0 ]; then
-        echo "This script should run on root.";
-        echo "Trying to launch self with sudo...";
-        exec sudo \$0
-fi
-useradd -r -s /dev/null -g nogroup -d /usr/lib/$FADE_PROJECT_NAME -c "$FADE_PROJECT_DESC" $FADE_PROJECT_NAME
-echo "$FADE_PROJECT_NAME v$FADE_PROJECT_VERSION by $FADE_MAINTAINER_NAME <$FADE_MAINTAINER_MAIL>"
-echo "$FADE_PROJECT_DESC"
-test -d /usr/lib/$FADE_PROJECT_NAME || mkdir /usr/lib/$FADE_PROJECT_NAME
-chown -R $FADE_PROJECT_NAME:root /usr/lib/$FADE_PROJECT_NAME
-tar -C / -xzf data.tar.gz
-
-## You may delete this line, but if you love FADe, please don't remove it.
-echo "Powered by Fully Automated Distribution enhanced (FADe)"
-
-## Insert your post-install script here.
-## If you need run as your user please use:
-## sudo -H -u $FADE_PROJECT_NAME (COMMAND)
-
-if [ "$FADE_PROJECT_BOOT" -ne "0" ]; then
-cat >> /etc/systemd/system/$FADE_PROJECT_NAME.service << EOF
-[Unit]
-Description=$FADE_PROJECT_DESC
-
-[Service]
-Type=simple
-User=$FADE_PROJECT_NAME
-WorkingDirectory=/usr/lib/$FADE_PROJECT_NAME
-ExecStart=/bin/bash -c "cd /usr/lib/$FADE_PROJECT_NAME;$FADE_PROJECT_RUN"
-ExecStop=/usr/bin/killall -u $FADE_PROJECT_NAME
-
-[Install]
-WantedBy=multi-user.target
-EOF
-chmod 644 /etc/systemd/system/$FADE_PROJECT_NAME.service
-systemctl daemon-reload
-systemctl start $FADE_PROJECT_NAME
-systemctl enable $FADE_PROJECT_NAME
-fi
-EOFA
-chmod 755 fadework/internal-sh/install
 chmod 755 fadework/internal/postinst
 chmod 755 fadework/internal/prerm
 chmod 755 fadework/usr/bin/$FADE_PROJECT_NAME
 echo
-cp fadework/internal/prerm fadework/internal-sh/uninstall
   cat << EOF
 Please move your hard work to fadework/usr/lib/$FADE_PROJECT_NAME.
 If you ready, please run this script with your own option.
 EOF
   ;;
-  buildsh)
-	test -d fadework || echo "Please do $0 init first."
-	test -d fadework || exit 1
-	test -f project-dist.tar.gz && rm project-dist.tar.gz
-	cd fadework
-	test -f internal-sh/data.tar.gz && rm internal-sh/data.tar.gz
-	tar -czf internal-sh/data.tar.gz usr
-	cd internal-sh
-	tar -czf ../../project-dist.tar.gz .
-	rm data.tar.gz
-	cd ../..
-	echo "Done. Please check project-dist.tar.gz!"
-;;
   builddeb)
 	test -d fadework || echo "Please do $0 init first."
         test -d fadework || exit 1
@@ -207,7 +150,6 @@ EOF
 	cat << EOF
 $0 help: Show this help.
 $0 init: Create FADe Default Structure
-$0 buildsh: Build Installable-shell script.
 $0 builddeb: Build your own Debian Package.
 $0 version: Show FADe's Version
 EOF

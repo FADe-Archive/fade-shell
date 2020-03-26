@@ -23,7 +23,8 @@ fi
 
 case $1 in
   init)
-  ## should refactor with fade-linux.github.io link
+  	test -d fadework && echo "Please remove fadework directory, first."
+	test -d fadework && exit 1
 	test -n "$FADE_PROJECT_NAME" || echo -n "Enter your project's name(in lower case alphabet, number, dash): "
 	test -n "$FADE_PROJECT_NAME" || read FADE_PROJECT_NAME
 	test -n "$FADE_PROJECT_DESC" || echo "What a awesome project!"
@@ -45,7 +46,17 @@ case $1 in
 	test -n "$FADE_PROJECT_BOOT" || echo -n "Do you wanna make your service run on boot? (1/0): "
 	test -n "$FADE_PROJECT_BOOT" || read FADE_PROJECT_BOOT
 	mkdir -p fadework/usr/lib/$FADE_PROJECT_NAME
-	mkdir fadework/usr/bin
+	mkdir fadework/usr/bin/
+	cat >> fadework/fade.conf << EOF
+FADE_PROJECT_NAME="$FADE_PROJECT_NAME"
+FADE_PROJECT_DESC="$FADE_PROJECT_DESC"
+FADE_PROJECT_RUN="$FADE_PROJECT_RUN"
+FADE_PROJECT_VERSION="$FADE_PROJECT_VERSION"
+FADE_PROJECT_DEPENDS="$FADE_PROJECT_DEPENDS"
+FADE_MAINTAINER_NAME="$FADE_MAINTAINER_NAME"
+FADE_PROJECT_WWW="$FADE_PROJECT_WWW"
+FADE_PROJECT_BOOT="$FADE_PROJECT_BOOT"
+EOF
 	cat >> fadework/usr/bin/$FADE_PROJECT_NAME << EOF
 #!/bin/bash
 if [ \$EUID -ne 0 ]; then
@@ -121,14 +132,16 @@ chmod 755 fadework/internal/prerm
 chmod 755 fadework/usr/bin/$FADE_PROJECT_NAME
 echo
   cat << EOF
-Please move your hard work to fadework/usr/lib/$FADE_PROJECT_NAME.
+FADe is ready for you.
 If you ready, please run this script with your own option.
 EOF
   ;;
   builddeb)
 	test -d fadework || echo "Please do $0 init first."
         test -d fadework || exit 1
-	test -f project-dist.deb && rm project-dist.deb
+	source fadework/fade.conf
+	test -f $FADE_PROJECT_NAME-$FADE_PROJECT_VERSION-all.deb && rm $FADE_PROJECT_NAME-$FADE_PROJECT_VERSION-all.deb
+	mv * fadework/usr/lib/
         cd fadework
 	echo '2.0'>debian-binary
 	test -f control.tar.gz && rm control.tar.gz
@@ -137,20 +150,28 @@ EOF
 	cd internal
 	tar -czf ../control.tar.gz *
 	cd ..
-	ar r ../project-dist.deb debian-binary control.tar.gz data.tar.gz
+	ar r ../$FADE_PROJECT_NAME-$FADE_PROJECT_VERSION-all debian-binary control.tar.gz data.tar.gz
 	rm debian-binary control.tar.gz data.tar.gz
 	cd ..
 	echo "We created RAW Debian package (.deb)"
 	echo "It can be installed on system, but if you needed"
 	echo "Sign the package."
 	echo ""
-	echo "Done. Check project-dist.deb!"
+	echo "Done. Check $FADE_PROJECT_NAME-$FADE_PROJECT_VERSION-all.deb"
+;;
+  apply)
+  	test -d fadework || echo "Please do $0 init first."
+        test -d fadework || exit 1
+	source fadework/fade.conf
+	rm -rf fadework
+	$0 init
 ;;
   *)
 	cat << EOF
 $0 help: Show this help.
 $0 init: Create FADe Default Structure
 $0 builddeb: Build your own Debian Package.
+$0 apply: Apply new fade.conf
 $0 version: Show FADe's Version
 EOF
 esac

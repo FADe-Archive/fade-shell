@@ -141,7 +141,7 @@ EOF
         test -d fadework || exit 1
 	source fadework/fade.conf
 	test -f $FADE_PROJECT_NAME-$FADE_PROJECT_VERSION-all.deb && rm $FADE_PROJECT_NAME-$FADE_PROJECT_VERSION-all.deb
-	mv * fadework/usr/lib/
+	cp -R * fadework/usr/lib/
         cd fadework
 	echo '2.0'>debian-binary
 	test -f control.tar.gz && rm control.tar.gz

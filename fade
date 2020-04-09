@@ -46,6 +46,7 @@ case $1 in
 	test -n "$FADE_PROJECT_BOOT" || echo -n "Do you wanna make your service run on boot? (1/0): "
 	test -n "$FADE_PROJECT_BOOT" || read FADE_PROJECT_BOOT
 	mkdir -p fadework/usr/lib/$FADE_PROJECT_NAME
+	echo "ANYTHING IN THIS DIRECTORY IS WILL BE DISCARDED">>fadework/usr/lib/$FADE_PROJECT_NAME/DO_NOT_PUT_FILE_ON_THIS_DIRECTORY
 	mkdir fadework/usr/bin/
 	cat >> fadework/fade.conf << EOF
 FADE_PROJECT_NAME="$FADE_PROJECT_NAME"
@@ -54,8 +55,12 @@ FADE_PROJECT_RUN="$FADE_PROJECT_RUN"
 FADE_PROJECT_VERSION="$FADE_PROJECT_VERSION"
 FADE_PROJECT_DEPENDS="$FADE_PROJECT_DEPENDS"
 FADE_MAINTAINER_NAME="$FADE_MAINTAINER_NAME"
+FADE_MAINTAINER_MAIL="$FADE_MAINTAINER_MAIL"
 FADE_PROJECT_WWW="$FADE_PROJECT_WWW"
 FADE_PROJECT_BOOT="$FADE_PROJECT_BOOT"
+EOF
+	cat >> fadework/fade-electron.json << EOF
+{"name": "$FADE_PROJECT_NAME", "version": "$FADE_PROJECT_VERSION", "url": "$FADE_PROJECT_WWW", "depends", "$FADE_PROJECT_DEPENDS", "run": "$FADE_PROJECT_RUN", "maintainer_name": "$FADE_MAINTAINER_NAME", "maintainer_mail": "$FADE_MAINTAINER_MAIL", "startboot": "$FADE_PROJECT_BOOT", "desc": "$FADE_PROJECT_DESC"}
 EOF
 	cat >> fadework/usr/bin/$FADE_PROJECT_NAME << EOF
 #!/bin/bash
@@ -141,8 +146,11 @@ EOF
         test -d fadework || exit 1
 	source fadework/fade.conf
 	test -f $FADE_PROJECT_NAME-$FADE_PROJECT_VERSION-all.deb && rm $FADE_PROJECT_NAME-$FADE_PROJECT_VERSION-all.deb
-	cp -R * fadework/usr/lib/
         cd fadework
+	rm -rf usr/lib/$FADE_PROJECT_NAME
+	mkdir usr/lib/$FADE_PROJECT_NAME
+	cp -r ../* usr/lib/$FADE_PROJECT_NAME
+	rm -rf usr/lib/$FADE_PROJECT_NAME/fadework
 	echo '2.0'>debian-binary
 	test -f control.tar.gz && rm control.tar.gz
         test -f data.tar.gz && rm data.tar.gz
@@ -150,8 +158,10 @@ EOF
 	cd internal
 	tar -czf ../control.tar.gz *
 	cd ..
-	ar r ../$FADE_PROJECT_NAME-$FADE_PROJECT_VERSION-all debian-binary control.tar.gz data.tar.gz
-	rm debian-binary control.tar.gz data.tar.gz
+	ar r ../$FADE_PROJECT_NAME-$FADE_PROJECT_VERSION-all.deb debian-binary control.tar.gz data.tar.gz
+	rm -rf usr/lib/$FADE_PROJECT_NAME debian-binary control.tar.gz data.tar.gz
+	mkdir usr/lib/$FADE_PROJECT_NAME
+	echo "ANYTHING IN THIS DIRECTORY IS WILL BE DISCARDED">>usr/lib/$FADE_PROJECT_NAME/DO_NOT_PUT_FILE_ON_THIS_DIRECTORY
 	cd ..
 	echo "We created RAW Debian package (.deb)"
 	echo "It can be installed on system, but if you needed"
@@ -171,7 +181,7 @@ EOF
 $0 help: Show this help.
 $0 init: Create FADe Default Structure
 $0 builddeb: Build your own Debian Package.
-$0 apply: Apply new fade.conf
+$0 apply: Apply edited fade.conf
 $0 version: Show FADe's Version
 EOF
 esac
